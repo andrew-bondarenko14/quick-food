@@ -1,10 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Product;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
-class ProductsController extends Controller
+class UsersController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,24 +16,7 @@ class ProductsController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        foreach ($products as $product) {
-            if (!$product->img) {
-                $product->img = 'no_image.png';
-            }
-        }
-        return response()->json($products);
-    }
-
-    public function getProductsByCategory($id)
-    {
-        $products = Product::where('category_id', $id)->get();
-        foreach ($products as $product) {
-            if (!$product->img) {
-                $product->img = 'no_image.png';
-            }
-        }
-        return view('pages.products', compact('products'));
+        return response()->json(User::with(['role'])->get());
     }
 
     /**
@@ -52,7 +38,19 @@ class ProductsController extends Controller
     public function store(Request $request)
     {
         $data = $request->toArray();
-        Product::create($data);
+        $validator = Validator::make($data, [
+            'name' => 'required|between:3,255|string',
+            'surname' => 'required|between:3,255|string',
+            'patronymic' => 'max:255|string',
+            'login' => 'required|between:5,255|unique:users',
+            'email' => 'required|unique:users|email|string|max:255',
+            'password' => 'required|string|min:8|confirmed'
+        ]);
+        if ($validator->fails()) {
+            dd($validator->messages());
+        }
+        $data['password'] = Hash::make($data['password']);
+        User::create($data);
     }
 
     /**
@@ -63,11 +61,7 @@ class ProductsController extends Controller
      */
     public function show($id)
     {
-        $product = Product::where('id', $id)->get()->first();
-        if (!$product->img) {
-            $product->img = 'no_image.png';
-        }
-        return view('pages.product', compact('product'));
+        //
     }
 
     /**
@@ -91,9 +85,11 @@ class ProductsController extends Controller
     public function update(Request $request)
     {
         $data = $request->toArray();
+        unset($data['role']);
         unset($data['created_at']);
         unset($data['updated_at']);
-        Product::where('id', $request->id)->update($data);
+
+        User::where('id', $request->id)->update($data);
     }
 
     /**
@@ -104,8 +100,9 @@ class ProductsController extends Controller
      */
     public function destroy($id)
     {
-        $productId = (int)$id;
-        $product = Product::findOrFail($productId);
-        $product->delete();
+        $userId = (int)$id;
+
+        $user = User::findOrFail($userId);
+        $user->delete();
     }
 }

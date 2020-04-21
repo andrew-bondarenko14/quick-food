@@ -15,7 +15,7 @@ use App\Models\User;
 */
 
 Route::get('/', function () {
-    return view('layouts/app');
+    return view('pages/home');
 });
 Route::get('/categories', 'CategoriesController@index')->name('categories');
 Route::get('products/category/{id}', 'ProductsController@getProductsByCategory');
@@ -31,6 +31,24 @@ Route::middleware('auth')->group(function() {
 Route::get('/moder-dashboard/{any}', 'Dashboards\ModerController@index')
     ->where('any', '.*')
     ->middleware('check-moder');
-Route::get('/admin-dashboard{any}', 'Dashboards\AdminController@index')
+Route::get('/admin-dashboard/{any}', 'Dashboards\AdminController@index')
     ->where('any', '.*')
     ->middleware('check-admin');
+Route::get('users', 'UsersController@index');
+Route::put('update-user', 'UsersController@update');
+Route::post('users/create', 'UsersController@store');
+Route::delete('users/{id}', 'UsersController@destroy');
+
+Route::get('get-categories', 'CategoriesController@indexDash');
+Route::put('update-category', 'CategoriesController@update');
+Route::post('update-image', 'CategoriesController@updateImage');
+Route::post('categories/create', 'CategoriesController@store');
+Route::delete('categories/{id}', 'CategoriesController@destroy');
+
+Route::get('products', 'ProductsController@index');
+Route::put('update-product', 'ProductsController@update');
+Route::post('products/create', 'ProductsController@store');
+Route::delete('products/{id}', 'ProductsController@destroy');
+
+Route::post('orders', 'OrdersControllers@store');
+//Route::post('orders', 'OrdersControllers@store');

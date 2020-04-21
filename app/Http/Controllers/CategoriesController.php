@@ -14,15 +14,22 @@ class CategoriesController extends Controller
     public function index()
     {
         $categories = Category::all();
-        //if (!isset($categories->img)) {
-            //$categories->img = 'images/no_photo.png';
-        //}
         foreach ($categories as $category) {
             if (!$category->img) {
                 $category->img = 'no_image.png';
             }
         }
         return view('pages.categories', compact('categories'));
+    }
+    public function indexDash()
+    {
+        $categories = Category::all();
+        foreach ($categories as $category) {
+            if (!$category->img) {
+                $category->img = 'no_image.png';
+            }
+        }
+        return response()->json($categories);
     }
 
     /**
@@ -43,7 +50,8 @@ class CategoriesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->toArray();
+        Category::create($data);
     }
 
     /**
@@ -75,11 +83,18 @@ class CategoriesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $data = $request->toArray();
+        unset($data['created_at']);
+        unset($data['updated_at']);
+        Category::where('id', $request->id)->update($data);
     }
-
+    public function updateImage(Request $request)
+    {
+        $data = $request;
+        dd($data);
+    }
     /**
      * Remove the specified resource from storage.
      *
@@ -88,6 +103,8 @@ class CategoriesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $categoryId = (int)$id;
+        $category = Category::findOrFail($categoryId);
+        $category->delete();
     }
 }
